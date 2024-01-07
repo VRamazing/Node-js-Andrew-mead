@@ -9,6 +9,7 @@
   "author": "veer",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^2.4.0",
     "validator": "^13.11.0"
   }
 }
