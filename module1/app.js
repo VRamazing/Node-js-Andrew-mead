@@ -1,27 +1,62 @@
-const {name, add} = require("./utils.js");
-const getNotes = require("./notes.js");
-const validator = require("validator");
-const fs = require("fs");
-const log = console.log;
+const chalk = require("chalk");
+const yargs = require("yargs");
+const { listNotes, addNote, removeNote, readNote }   = require("./notes.js");
 
-const chalk  = require('chalk');
+//set yargs version
+yargs.version('1.1.0');
 
-fs.writeFileSync(
-    'notes.txt',
-    'hi node js'
-)
+// add command
+yargs.command({
+    command: "add",
+    describe: "Add a note",
+    builder: {
+        title: {
+            describe: "Note title",
+            demandOption: true,
+            type: 'string'
+        },
+        body: {
+            describe: "Note body",
+            demandOption: true,
+            type: "string"
+        }
+    },
+    handler: (argv) => addNote(argv.title, argv.body) 
+})
 
-fs.appendFileSync(
-    'notes.txt',
-    'lets go'
-)
+// Remove command
+yargs.command({
+    command: "remove",
+    describe: "Remove a note",
+    builder: {
+        title: {
+            describe: "Note title",
+            demandOption: true,
+            type: "string"
+        }
+    },
+    handler: (argv) => removeNote(argv.title)
+})
 
-log(chalk.green.bold.bgWhite.inverse('Chalk success!'));
+//list command
+yargs.command({
+    command: "list",
+    describe: "List notes",
+    handler: () => listNotes()
+})
 
-console.log("Writing completed");
-console.log(name);
-console.log(add(4,2));
-console.log(getNotes());
-console.log(validator.isEmail('foo.com'));
-console.log(validator.isURL('http://foo.in'));
+//read command
+yargs.command({
+    command: "read",
+    describe: "Read a note",
+    builder: {
+        title: {
+            describe: "Note title",
+            demandOption: true,
+            type: "string"
+        }
+    },
+    handler: (argv) => readNote(argv.title)
+})
 
+yargs.parse();
