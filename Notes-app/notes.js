@@ -19,7 +19,10 @@ const readNote = (title) => {
 
 }
 
+
 const addNote = (title, body) => {
+    debugger;
+
     const noteList = loadNotes();
     // Dont add new note if note of same title is present.
     const duplicateNotes = noteList.filter((note) => note.title === title);
