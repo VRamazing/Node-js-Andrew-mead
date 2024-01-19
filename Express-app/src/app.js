@@ -18,7 +18,9 @@ app.set("views", viewsPath);
 
 hbs.registerPartials(partialsPath);
 
-app.get("/", (req, res) => {
+
+
+app.get("", (req, res) => {
     res.render("index", {
         title: "Weather app", 
         name: "Veer M"
@@ -41,10 +43,24 @@ app.get("/help", (req, res) => {
     });
 })
 
-
-
 app.get("/weather", (req, res) => {
     res.send({forcast: "Its going to rain", temp: "50"});
+})
+
+app.get("/help/*", (req, res) => {
+    res.render("404Page", {
+        title: "Help", 
+        name: "Veer M",
+        message: "Help article not found"
+    })
+})
+
+app.get("*", (req, res) => {
+    res.render("404Page",  {
+        title: "404", 
+        name: "Veer M",
+        message: "Page not found"
+    })
 })
 
 app.listen(port, undefined, () => {console.log("Server listening at port:" + port)});
