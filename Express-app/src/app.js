@@ -1,6 +1,8 @@
 const path = require("path");
 const express = require("express");
 const hbs = require("hbs");
+const forecast = require("./utils/forecasts");
+
 
 const app = express();
 
@@ -22,7 +24,7 @@ hbs.registerPartials(partialsPath);
 
 app.get("", (req, res) => {
     res.render("index", {
-        title: "Weather app", 
+        title: "Weather app",
         name: "Veer M"
     });
 })
@@ -30,7 +32,7 @@ app.get("", (req, res) => {
 
 app.get("/about", (req, res) => {
     res.render("about", {
-        title: "About Me", 
+        title: "About Me",
         name: "Veer M"
     });
 })
@@ -38,29 +40,58 @@ app.get("/about", (req, res) => {
 app.get("/help", (req, res) => {
     res.render("help", {
         help: "Sry we cant help",
-        title: "Help", 
+        title: "Help",
         name: "Veer M"
     });
 })
 
 app.get("/weather", (req, res) => {
-    res.send({forcast: "Its going to rain", temp: "50"});
+    if (!req.query.address) {
+        return res.send({
+            message: "You must send address"
+        })
+    }
+
+    forecast(encodeURIComponent(req.query.address), (error, data) => {
+        if(error){
+            return res.send({
+                message: error
+            })
+        }
+        return res.send({ forcast: data.weather_descriptions[0], temp: data.temperature, address: req.query.address })
+
+    })
 })
+
+
+app.get("/products", (req, res) => {
+    if (!req.query.search) {
+        return res.send({
+            message: "You must send search term"
+        })
+    }
+    console.log(req.query.search);
+    res.send({
+        products: []
+    })
+});
+
 
 app.get("/help/*", (req, res) => {
     res.render("404Page", {
-        title: "Help", 
+        title: "Help",
         name: "Veer M",
         message: "Help article not found"
     })
 })
 
 app.get("*", (req, res) => {
-    res.render("404Page",  {
-        title: "404", 
+    res.render("404Page", {
+        title: "404",
         name: "Veer M",
         message: "Page not found"
     })
 })
 
-app.listen(port, undefined, () => {console.log("Server listening at port:" + port)});
+
+app.listen(port, undefined, () => { console.log("Server listening at port:" + port) });
