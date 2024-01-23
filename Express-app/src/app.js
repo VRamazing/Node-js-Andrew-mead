@@ -5,7 +5,7 @@ const forecast = require("./utils/forecasts");
 
 const app = express();
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const publicPath = path.join(__dirname, "../public")
 const viewsPath = path.join(__dirname, "../templates/views")
@@ -52,12 +52,18 @@ app.get("/weather", (req, res) => {
     }
 
     forecast(encodeURIComponent(req.query.address), (error, data) => {
-        if(error){
+        if (error) {
             return res.send({
-                message: error
+                error: error
             })
         }
-        return res.send({ forcast: data.weather_descriptions[0], temp: data.temperature, address: req.query.address })
+        if(!data.current || !data.location){
+            return res.send({
+                error: "Unable to fetch data"
+            })
+        }
+        const {current, location} = data;
+        return res.send({ forcast: current.weather_descriptions[0], temperature: current.temperature, address: req.query.address, country: location.country })
 
     })
 })
@@ -69,7 +75,6 @@ app.get("/products", (req, res) => {
             message: "You must send search term"
         })
     }
-    console.log(req.query.search);
     res.send({
         products: []
     })

@@ -9,10 +9,8 @@ module.exports = function forecast(location, callback) {
             callback("Unable to find location");
         }
         else {
-            // It's currently 48 degrees and the chance of rain is 10%
-            const currentWeather = body.current;
             // console.log(`There is ${currentWeather.weather_descriptions[0]} and It's currently ${currentWeather.temperature} degrees and feels like ${currentWeather.feelslike} degree celcius`);
-            callback(undefined, currentWeather);
+            callback(undefined, body);
         }
 
     });
