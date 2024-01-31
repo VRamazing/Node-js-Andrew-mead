@@ -3,6 +3,7 @@ const router = new express.Router()
 
 const User = require('../models/user')
 
+
 /* Users routes */
 router.get('/users', async (req, res) => {
     try{
@@ -33,7 +34,7 @@ router.get('/users/:userId', async (req, res) => {
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
     try{
-        await User.save()
+        await user.save()
         res.status(201).send(user)
     }
     catch(e){
@@ -52,10 +53,9 @@ router.patch('/users/:userId', async (req, res) => {
         })
     }
     try{
-        const user = await User.findByIdAndUpdate(userId, req.body, {
-            new: true,
-            runValidators: true
-        })
+        const user = await User.findById(userId);
+        updates.forEach(update => user[update] = req.body[update])
+        await user.save()
 
         if(!user){
             return res.status(400).send({error: "User not found"})
