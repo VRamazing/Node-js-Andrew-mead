@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs')
+const jwt = require("jsonwebtoken")
 
 
 const UserSchema = new mongoose.Schema({
@@ -10,23 +11,24 @@ const UserSchema = new mongoose.Schema({
         trim: true,
     },
     password: {
-        type: String, 
+        type: String,
         required: true,
         trim: true,
         minLength: 6,
-        validate(value){
-            if(value.toLowerCase().includes("password")){
+        validate(value) {
+            if (value.toLowerCase().includes("password")) {
                 throw new Error("Password not allowed. Try again");
             }
         }
     },
     email: {
-        type: String, 
+        type: String,
         required: true,
         trim: true,
+        unique: true,
         lowercase: true,
-        validate(value){
-            if(!validator.isEmail(value)){
+        validate(value) {
+            if (!validator.isEmail(value)) {
                 throw new Error("Email is invalid");
             }
         }
@@ -39,8 +41,39 @@ const UserSchema = new mongoose.Schema({
                 throw new Error('Age must be a postive number')
             }
         }
-    }
+    },
+    tokens: [{
+        token: {
+            type: String, 
+            required: true
+        }
+    }]
 })
+
+UserSchema.methods.generateAuthToken = async function() {
+    const user = this;
+    const pass = "nodejscourse"
+    const token = jwt.sign({_id: user._id.toString()}, pass)
+    user.tokens = user.tokens.concat({token})
+    await user.save();
+    return token;
+}
+
+// Returns user if user exists sand credentials are correct
+UserSchema.statics.findByCredentials = async function (email, password) {
+    const user = await User.findOne({ email })
+    console.log(user)
+    if(!user){
+        throw new Error("Unable to login, User doesn't exists")
+    }
+    const match = await bcrypt.compare(password, user.password)
+
+    if(!match){
+        throw new Error("Username & password don't match")
+    }
+
+    return user
+}
 
 UserSchema.pre('save', async function (next) {
     const user = this
