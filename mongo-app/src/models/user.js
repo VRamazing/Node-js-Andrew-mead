@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs')
 const jwt = require("jsonwebtoken")
+const Task = require("./task")
 
 
 const UserSchema = new mongoose.Schema({
@@ -49,6 +50,19 @@ const UserSchema = new mongoose.Schema({
         }
     }]
 })
+UserSchema.virtual("tasks", {
+    ref: "Task",
+    localField: '_id',
+    foreignField: 'owner'
+})
+
+UserSchema.methods.toJSON = function() {
+    const user = this;
+    const userObject = user.toObject();
+    delete userObject.password
+    delete userObject.tokens
+    return userObject 
+}
 
 UserSchema.methods.generateAuthToken = async function() {
     const user = this;
@@ -71,7 +85,6 @@ UserSchema.statics.findByCredentials = async function (email, password) {
     if(!match){
         throw new Error("Username & password don't match")
     }
-
     return user
 }
 
@@ -85,6 +98,17 @@ UserSchema.pre('save', async function (next) {
 
     next()
 })
+
+
+UserSchema.pre('remove', async function (next) {
+    const user = this
+
+    await Task.deleteMany({owner: user._id}) 
+
+    next()
+})
+
+
 
 const User = mongoose.model("User", UserSchema);
 
