@@ -52,6 +52,7 @@ const UserSchema = new mongoose.Schema({
 }, {
     timestamps: true
 })
+
 UserSchema.virtual("tasks", {
     ref: "Task",
     localField: '_id',
