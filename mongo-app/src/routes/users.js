@@ -4,7 +4,7 @@ const multer = require("multer");
 
 const User = require('../models/user')
 const auth = require("../middleware/auth")
-
+const sharp = require("sharp")
 
 
 /* Users routes */
@@ -86,12 +86,51 @@ router.delete('/users/me', auth, async (req, res) => {
 })
 
 const upload = multer({
-    dest: "avatars"
+    limits: {
+        fileSize: 1000000,
+
+    },
+    fileFilter: function(req, file, cb){
+        console.log(file)
+        if(!file.originalname.match(/\w+.(jpeg|jpg|png)/)){
+            return cb(new Error("Please upload an image"))
+        }
+        cb(undefined, true);
+    }
 }) 
 
-router.post("/users/me/avatar", upload.single('avatar'), (req, res) => {
-    res.send()
+router.post("/users/me/avatar",auth, upload.single('avatar'), async (req, res) => {
+    const buffer = await sharp(req.file.buffer).resize({
+        width: 250,
+        height: 250
+    }).png().toBuffer()
+    req.user.avatar = buffer
+    await req.user.save()
+    res.send({})
+}, (err, req, res, next) => {
+    res.status(400).send({ error: err.message })
 })
+
+router.delete("/users/me/avatar",auth, async (req, res) => {
+    req.user.avatar = undefined
+    await req.user.save()
+    res.send({})
+})
+
+router.get("/users/:id/avatar", async (req, res) => {
+   try{
+    const user = await User.findOne({_id: req.params.id})
+    if(!user || !user.avatar){
+        throw new Error("User avatar not found")
+    }
+    res.set('Content-Type', "image/png")
+    res.send(user.avatar)
+   }
+   catch(err){
+        res.status(400).send(err);
+   }
+})
+
 
 
 module.exports = router
