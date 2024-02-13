@@ -5,11 +5,11 @@ const UserRouter = require("./routes/users")
 const TaskRouter = require("./routes/tasks")
 
 const app = express()
-const port = process.env.PORT || 3000
+const port = process.env.PORT
 
 app.use(express.json())
 
-mongoose.connect("mongodb://localhost:27017/task-manager-api", {
+mongoose.connect(process.env.MONGODB_URL, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false
