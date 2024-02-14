@@ -83,7 +83,6 @@ UserSchema.methods.generateAuthToken = async function() {
 // Returns user if user exists sand credentials are correct
 UserSchema.statics.findByCredentials = async function (email, password) {
     const user = await User.findOne({ email })
-    console.log(user)
     if(!user){
         throw new Error("Unable to login, User doesn't exists")
     }
