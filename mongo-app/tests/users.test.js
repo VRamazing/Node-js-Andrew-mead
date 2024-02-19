@@ -94,3 +94,41 @@ test("Should succeed deleting current user when authenticated", async () => {
 test("Should fail deleting current user when authenticated", async () => {
     await request(app).delete("/users/me").send().expect(401)
 })
+
+
+test("Should upload avatar image", async () => {
+    await request(app)
+        .post("/users/me/avatar")
+        .set("Authorization", `Bearer ${userOne.tokens[0].token}`)
+        .attach("avatar", "tests/fixtures/profile-pic.jpg")
+        .expect(200)
+
+    const user = await User.findById(userOneId)
+    expect(user.avatar).toEqual(expect.any(Buffer))
+})
+
+
+
+test("Should update valid user field", async () => {
+    await request(app)
+        .patch("/users/me")
+        .set("Authorization", `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            "name": "Veer",
+        })
+        .expect(200)
+
+    const user = await User.findById(userOneId)
+    expect(user.name).toEqual("Veer")
+})
+
+
+test("Should not update invalid user field", async () => {
+    await request(app)
+        .patch("/users/me")
+        .set("Authorization", `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            "favColor": "Red",
+        })
+        .expect(406)
+})
